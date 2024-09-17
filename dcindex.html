@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dental Financing Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 700px; /* Increased width to accommodate the table */
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .calculator {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .calculator label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        .calculator input, .calculator select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        .calculator button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .calculator button:hover {
+            background-color: #45a049;
+        }
+
+        .results {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+
+        .results p {
+            margin: 5px 0;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: right;
+        }
+
+        th, td.label-cell {
+            text-align: left;
+            padding-left: 10px; /* Added padding for the row labels */
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        input[type="text"].table-input {
+            width: 90%; /* Adjusted width to prevent overflow */
+            padding: 5px;
+            text-align: right;
+        }
+
+        .readonly {
+            background-color: #f0f0f0;
+            color: #555;
+        }
+
+    </style>
+</head>
+<body>
+
+<h1>Dental Financing Calculator</h1>
+
+<div class="calculator">
+    <!-- Form Fields -->
+    <label for="date">Date:</label>
+    <input type="date" id="date" required>
+
+    <label for="firstName">Patient First Name:</label>
+    <input type="text" id="firstName" placeholder="Enter first name" required>
+
+    <label for="lastName">Patient Last Name:</label>
+    <input type="text" id="lastName" placeholder="Enter last name" required>
+
+    <label for="treatmentAmount">Treatment Amount ($):</label>
+    <input type="text" id="treatmentAmount" placeholder="Enter treatment amount" required>
+
+    <label for="lender">Select Lender:</label>
+    <select id="lender" onchange="updatePromoPlans()" required>
+        <option value="">Select a lender</option>
+        <option value="HFD">HFD</option>
+        <option value="CareCredit">CareCredit</option>
+        <option value="MySmileClub">MySmileClub</option>
+        <option value="Proceed">Proceed</option>
+        <option value="Fortiva">Fortiva</option>
+    </select>
+
+    <label for="promoPlan">Select Promo Plan:</label>
+    <select id="promoPlan" onchange="calculateNetAmount()" required>
+        <option value="">Select a promo plan</option>
+    </select>
+
+    <div class="error-message" id="error-message"></div>
+
+    <div class="results">
+        <p><strong>Discount:</strong> $<span id="discount">0.00</span></p>
+        <p><strong>Merchant Fee:</strong> $<span id="merchantFee">0.00</span></p>
+        <p><strong>Net Amount to be Posted:</strong> $<span id="netAmount">0.00</span></p>
+    </div>
+
+    <!-- Table for additional rows -->
+    <table>
+        <thead>
+            <tr>
+                <th>Provider</th>
+                <th>Amount</th>
+                <th>Fee</th>
+                <th>Net Amount Posted</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="label-cell">Doctor</td>
+                <td><input type="text" id="doctorAmount" class="table-input" oninput="calculateTableTotals()"></td>
+                <td><input type="text" id="doctorFee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="doctorNetAmount" class="table-input readonly" readonly></td>
+            </tr>
+            <tr>
+                <td class="label-cell">Hygienist</td>
+                <td><input type="text" id="hygienistAmount" class="table-input" oninput="calculateTableTotals()"></td>
+                <td><input type="text" id="hygienistFee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="hygienistNetAmount" class="table-input readonly" readonly></td>
+            </tr>
+            <tr>
+                <td class="label-cell">Provider 1</td>
+                <td><input type="text" id="provider1Amount" class="table-input" oninput="calculateTableTotals()"></td>
+                <td><input type="text" id="provider1Fee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="provider1NetAmount" class="table-input readonly" readonly></td>
+            </tr>
+            <tr>
+                <td class="label-cell">Provider 2</td>
+                <td><input type="text" id="provider2Amount" class="table-input" oninput="calculateTableTotals()"></td>
+                <td><input type="text" id="provider2Fee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="provider2NetAmount" class="table-input readonly" readonly></td>
+            </tr>
+            <tr>
+                <td class="label-cell">Provider 3</td>
+                <td><input type="text" id="provider3Amount" class="table-input" oninput="calculateTableTotals()"></td>
+                <td><input type="text" id="provider3Fee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="provider3NetAmount" class="table-input readonly" readonly></td>
+            </tr>
+            <tr>
+                <td class="label-cell"><strong>Totals</strong></td>
+                <td><input type="text" id="totalAmount" class="table-input readonly" readonly></td>
+                <td><input type="text" id="totalFee" class="table-input readonly" readonly></td>
+                <td><input type="text" id="totalNetAmount" class="table-input readonly" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    const promoPlans = {
+        HFD: [
+            { name: 'Plan A - 5% Discount', discount: 5, fee: 50 },
+            { name: 'Plan B - 10% Discount', discount: 10, fee: 75 }
+        ],
+        CareCredit: [
+            { name: 'Plan 1 - 7% Discount', discount: 7, fee: 80 },
+            { name: 'Plan 2 - 12% Discount', discount: 12, fee: 100 }
+        ],
+        MySmileClub: [
+            { name: 'Option A - 6% Discount', discount: 6, fee: 60 },
+            { name: 'Option B - 8% Discount', discount: 8, fee: 85 }
+        ],
+        Proceed: [
+            { name: 'Promo 1 - 3% Discount', discount: 3, fee: 40 },
+            { name: 'Promo 2 - 6% Discount', discount: 6, fee: 60 }
+        ],
+        Fortiva: [
+            { name: 'Deal 1 - 4% Discount', discount: 4, fee: 55 },
+            { name: 'Deal 2 - 9% Discount', discount: 9, fee: 90 }
+        ]
+    };
+
+    function updatePromoPlans() {
+        const lender = document.getElementById('lender').value;
+        const promoPlanDropdown = document.getElementById('promoPlan');
+        const errorMessage = document.getElementById('error-message');
+
+        // Clear the current options
+        promoPlanDropdown.innerHTML = '<option value="">Select a promo plan</option>';
+
+        if (lender && promoPlans[lender]) {
+            promoPlans[lender].forEach(plan => {
+                const option = document.createElement('option');
+                option.value = JSON.stringify(plan);
+                option.textContent = plan.name;
+                promoPlanDropdown.appendChild(option);
+            });
+            errorMessage.textContent = ''; // Clear error message if any
+        } else {
+            errorMessage.textContent = 'Please select a lender.';
+        }
+
+        // Reset dependent fields
+        resetResults();
+    }
+
+    function resetResults() {
+        document.getElementById('discount').textContent = '0.00';
+        document.getElementById('merchantFee').textContent = '0.00';
+        document.getElementById('netAmount').textContent = '0.00';
+    }
+
+    function calculateNetAmount() {
+        const treatmentAmount = parseFloat(document.getElementById('treatmentAmount').value);
+        const promoPlan = JSON.parse(document.getElementById('promoPlan').value || '{}');
+        const errorMessage = document.getElementById('error-message');
+
+        // Validate inputs
+        if (isNaN(treatmentAmount) || treatmentAmount <= 0) {
+            errorMessage.textContent = 'Please enter a valid treatment amount.';
+            return;
+        }
+
+        if (!promoPlan.discount || !promoPlan.fee) {
+            errorMessage.textContent = 'Please select a valid promo plan.';
+            return;
+        }
+
+        errorMessage.textContent = ''; // Clear error message
+
+        // Calculate discount and net amount
+        const discount = (promoPlan.discount / 100) * treatmentAmount;
+        const merchantFee = promoPlan.fee;
+        const netAmount = treatmentAmount - discount + merchantFee;
+
+        // Display results
+        document.getElementById('discount').textContent = discount.toFixed(2);
+        document.getElementById('merchantFee').textContent = merchantFee.toFixed(2);
+        document.getElementById('netAmount').textContent = netAmount.toFixed(2);
+    }
+
+    function calculateTableTotals() {
+        // Fetch amounts for each provider
+        let doctorAmount = parseFloat(document.getElementById('doctorAmount').value) || 0;
+        let hygienistAmount = parseFloat(document.getElementById('hygienistAmount').value) || 0;
+        let provider1Amount = parseFloat(document.getElementById('provider1Amount').value) || 0;
+        let provider2Amount = parseFloat(document.getElementById('provider2Amount').value) || 0;
+        let provider3Amount = parseFloat(document.getElementById('provider3Amount').value) || 0;
+
+        // Define sample fee and net calculation (you can modify this logic as needed)
+        let feePercentage = 0.1; // Assume 10% fee for the calculation
+
+        // Calculate fee and net amount for each row
+        calculateRow('doctor', doctorAmount, feePercentage);
+        calculateRow('hygienist', hygienistAmount, feePercentage);
+        calculateRow('provider1', provider1Amount, feePercentage);
+        calculateRow('provider2', provider2Amount, feePercentage);
+        calculateRow('provider3', provider3Amount, feePercentage);
+
+        // Calculate totals
+        let totalAmount = doctorAmount + hygienistAmount + provider1Amount + provider2Amount + provider3Amount;
+        let totalFee = totalAmount * feePercentage;
+        let totalNetAmount = totalAmount - totalFee;
+
+        // Update totals row
+        document.getElementById('totalAmount').value = totalAmount.toFixed(2);
+        document.getElementById('totalFee').value = totalFee.toFixed(2);
+        document.getElementById('totalNetAmount').value = totalNetAmount.toFixed(2);
+    }
+
+    function calculateRow(rowId, amount, feePercentage) {
+        let fee = amount * feePercentage;
+        let netAmount = amount - fee;
+
+        document.getElementById(`${rowId}Fee`).value = fee.toFixed(2);
+        document.getElementById(`${rowId}NetAmount`).value = netAmount.toFixed(2);
+    }
+</script>
+
+</body>
+</html>
